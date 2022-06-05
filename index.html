@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>课程设计</title>
+
+   <style>
+           #viewDiv {
+                float: left;
+           	position:absolute;
+           				left:0px;
+           				top:0px}
+			#viewDiv2 {
+			     float: right;
+				position:absolute;
+							right:20%;
+							top:0px	
+			}
+			#layerMangerTool{
+			  			 	border: 1px solid black;
+			  			 	    width: 20%;
+			  					height: 100%;
+			  					position:absolute;
+			  						left:80%;
+			  						top:0px
+			  			 }			  
+			#clue{
+				font-family:"Times New Roman", Times, serif;
+				font-size:14px;
+			}
+			#claim{
+				font-style:oblique;
+			}
+			
+			.del {
+			    float: right;
+			    color: red;
+			    border: 0px solid black;
+				float: right;
+				position:absolute;
+				left:95%;
+				
+			}
+			h2 {
+			    align-content: center;
+			}
+			
+			ul {
+			    list-style: none;
+			}
+			
+			
+       </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/light/main.css">
+	<script src="https://js.arcgis.com/4.19/"></script>
+	<script src="jquery.js"></script>
+	
+
+
+</head>
+
+<body>
+	
+    <div id="viewDiv" style="width: 40% ;height: 700px;"></div>
+	<div id="viewDiv2" style="width: 40% ;height: 700px;"></div>
+<!-- 	<div id="viewDiv3" style="width: 80% ;height: 800px;"></div>
+ -->	
+	
+	<div id="layerMangerTool">
+		<h2>图层管理</h2>
+		<hr>
+		<h3>底图选择</h3>
+		<select id="bm">
+		    <!--            <option v-for="item in baseMap" :value="item">{{item}}</option>-->
+		</select>
+		<hr>
+		<ul id="layerManger">
+		        <!--            <li v-for="(item,index) in layerName">-->
+		        <!--                <input v-bind:value="index" class="lm" type="checkbox" checked><span>{{item}}</span>-->
+		        <!--                <button v-bind:value="index" class="del">移除此图层</button>-->
+		        <!--            </li>-->
+		    </ul>
+		    <p id="num">-----</p>
+
+			<p id="pos">-----</p>
+
+			
+			
+			
+		
+	</div>
+	<script>
+	        require(["esri/config",
+	            "esri/Map",
+	            "esri/views/MapView",
+				"esri/layers/FeatureLayer",
+				"esri/layers/MapImageLayer",
+	                "esri/widgets/LayerList",
+					"esri/views/2d/layers/BaseLayerView2D",
+					"esri/core/watchUtils",
+					"esri/geometry/Point",
+					"esri/views/SceneView",
+					"esri/widgets/Search", "esri/widgets/Directions"], function (esriConfig, Map, MapView,FeatureLayer,MapImageLayer,LayerList,view2d,watchUtils,Point,SceneView,Search,Directions) {
+	
+	                esriConfig.apiKey = "AAPK56e3ac027f044c4089d8ceec232fc05dYaOuzVRzm8tMRqvzOvDvIEevbqJ85yppn9PacU6cy4duurJrVK9wo_8BcWO8i8bi";
+	
+	                const map = new Map({
+	                    basemap: "satellite" // Basemap layer service
+	                });
+					const map2 = new Map({
+	                    basemap: "satellite"// Basemap layer service
+	                });
+	
+	                const view = new MapView({
+	                    map: map,
+	                    center: [-100, 30.3752829], // Longitude, latitude
+	                    zoom: 4, // Zoom level
+	                    container: "viewDiv" ,// Div element
+	                });
+
+					const view2 = new MapView({
+					    map: map2,
+					    center: [-100, 30.3752829], // Longitude, latitude
+					    zoom: 4, // Zoom level
+					    container: "viewDiv2" ,// Div element
+					});
+
+					const searchWidget = new Search({
+          				view: view
+        			});
+        			view.ui.add(searchWidget, {
+          				position: "top-right"
+        			});
+
+					let directionsWidget = new Directions({
+					  view: view
+					});
+
+					// Add the Directions widget to the top right corner of the view
+					view.ui.add(directionsWidget, {
+					  position: "top-right"
+					});
+
+					var layer = new FeatureLayer({
+					 	    url:"https://sampleserver6.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer" 
+						}); 
+					//map.add(layer);
+					
+					var Image = new FeatureLayer({
+						url:"https://sampleserver6.arcgisonline.com/arcgis/rest/services/SampleWorldCities/MapServer/0"
+						
+					});
+					
+					var layer2=new FeatureLayer({
+					 	    url:"https://sampleserver6.arcgisonline.com/arcgis/rest/services/Earthquakes_Since1970/FeatureServer" 
+						}); 
+					//map.add(Image);
+					//view.on(,{})
+
+
+					var width = 400;
+					var lock = 0;
+					var viewDiv = document.getElementById('viewDiv');
+					var viewDiv2 = document.getElementById('viewDiv2');
+					
+					function changestyle(viewDiv){
+						viewDiv.style.width=String(width)+"px";
+						
+					}
+					//console.log(viewDiv.style)
+					
+					view.on("click", function(event){
+					//console.log(view.extent.xmax)
+					//changestyle(viewDiv)
+					//alert(viewDiv.style.height)
+					
+					console.log(event)
+					});
+					var juanlian=0;
+					view.on('click',["Control"], function (e) {
+						//if(e.button == 0&&juanlian==0){
+						//	alert("进入卷帘模式")
+						//	juanlian = 1;
+						//
+							//alert(juanlian)
+						//	view2.center=new Point({
+						//	x: 0.5*(view.extent.xmax-view.extent.xmin)+view.extent.xmax,
+						//	y: view.center.y,
+						//	spatialReference: {
+						//		wkid: view.spatialReference.wkid
+						//		}
+						//	});
+						//view2.zoom = view.zoom;
+
+						//}
+					}
+					)
+				view2.on('click',["Control"], function (e) {
+					if(e.button == 0&&juanlian==0){
+						alert("进入卷帘模式")							
+						juanlian = 1;
+						
+						//alert(juanlian)							
+						view2.center=new Point({
+						x: 0.5*(view.extent.xmax-view.extent.xmin)+view.extent.xmax,
+						y: view.center.y,
+						spatialReference: {
+							wkid: view.spatialReference.wkid
+							}
+						});
+					view2.zoom = view.zoom;
+					
+					}
+				}
+				)
+				
+					
+	view.on('pointer-move',[" "],function(e){
+		if(juanlian==1){
+			lock=1;
+			width=e.x;
+			//alert(width)
+			changestyle(viewDiv)
+			width = 1216-view.width
+			changestyle(viewDiv2)
+		}
+	})
+	view2.on('pointer-move',[" "],function(e){
+		if(juanlian==1){
+			lock=1;
+			width=view2.width-e.x;
+				// alert(width)
+				changestyle(viewDiv2)
+				width = 1216-view2.width
+				changestyle(viewDiv)
+		}
+	})
+	view2.on('click',function(e){
+		if(e.button == 2&&juanlian==1){
+			juanlian=0;
+			alert("卷帘模式退出")
+			
+				watchUtils.whenTrue(view, "stationary",
+				    function() {
+						//alert("nmd")
+						//alert("ggg")
+						if(juanlian==0){
+						view2.center=view.center
+						view2.zoom=view.zoom
+						}
+					})
+		}
+	})
+	
+					view.on('click', function (e) {
+						if(e.button == 2&&juanlian==1){
+							juanlian=0;
+							alert("卷帘模式退出")
+							
+								watchUtils.whenTrue(view, "stationary",
+								    function() {
+										//alert("nmd")
+										//alert("ggg")
+										if(juanlian==0){
+										view2.center=view.center
+										view2.zoom=view.zoom
+										}
+									})
+						}
+						//console.log(view.width)
+						//alert(e.x)
+						if(juanlian==0){
+							alert(e.mapPoint.latitude +","+e.mapPoint.longitude)
+							
+						}
+					 })
+					 
+					 view2.on("click",function(e){
+						 if(juanlian==0){
+							 alert(e.mapPoint.latitude +","+e.mapPoint.longitude)
+						 }
+					 })
+					 
+					 document.getElementById('bm').addEventListener('change', function () {
+					     map.basemap = $('#bm').val()
+					 })					
+					view.on('pointer-move', function(event){
+						const latlng = view.toMap({x: event.x, y: event.y});						
+						$('#pos').html("纬度："+latlng.latitude + '<br/>'+"经度："+latlng.longitude+ '<br/>'+"比例尺："+"1 : "+ view.scale);
+						
+						
+			    //$('#pos').text('图层数量为：' + layerName.length);
+					  
+					})
+					var appraise = 1
+					var beishu = 0;
+					watchUtils.whenTrue(view, "stationary",
+					    function() {
+							if(juanlian == 1){
+								// view2.center = view.center;
+								// view2.zoom = view.zoom;
+								//alert("ggg1")
+								view2.center = new Point({
+								x: 0.5*(view2.width/view.width)*(view.extent.xmax-view.extent.xmin)+view.extent.xmax,
+								y: view.center.y,
+								spatialReference: {
+								wkid: view.spatialReference.wkid
+								}
+								});
+								view2.zoom = view.zoom
+								     //console.log('==')
+							}
+					    }
+					);
+					watchUtils.whenTrue(view2, "stationary",
+					    function() {
+							if(juanlian == 1){								
+								// view2.center = view.center;
+								// view2.zoom = view.zoom;
+								//alert("ggg")
+								if(appraise==1){
+									//appraise=0
+									view.center = new Point({
+									//x: view2.center.x-view.extent.xmax+view.extent.xmin,
+									x: view2.extent.xmin-0.5*(view.width/view2.width)*(view2.extent.xmax-view2.extent.xmin),
+									y: view2.center.y,
+									spatialReference: {
+									wkid: view.spatialReference.wkid
+									}
+									});
+									view.zoom = view2.zoom
+									
+								}
+							}
+					});
+					
+						watchUtils.whenTrue(view, "stationary",
+						    function() {
+								if(juanlian==0)
+								{view2.center=view.center
+								view2.zoom=view.zoom}
+							})
+						watchUtils.whenTrue(view2, "stationary",
+						    function() {
+								if(juanlian==0)
+								{view.center=view2.center
+								view.zoom=view2.zoom}
+							})
+						
+						
+					
+					
+
+	
+	layerName = ["城市","道路","气温"];
+	layerUrl = ["https://sampleserver6.arcgisonline.com/arcgis/rest/services/WorldTimeZones/MapServer/","https://wwf-sight-maps.org/arcgis/rest/services/Global/Global_Roads_GRIP4/MapServer","https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/NDFD_Precipitation_v1/FeatureServer/0"];
+	baseMap = ["osm", "satellite", "oceans", "national-geographic", "hybrid", "gray", "dark-gray"];
+	
+	function init() {
+	    let bm = $('#bm');
+	    //底图下拉列表
+	    for (let i = 0; i < baseMap.length; i++) {
+	        let option = $('<option value=' + baseMap[i] + '>' + baseMap[i] + '</option>');
+	        bm.append(option);
+	    }
+	    lmMethods();
+	}
+	function lmMethods() {
+	    //清空内部元素
+	    let layerManger = $('#layerManger');
+	    layerManger.empty();
+	    //添加复选框
+	    for (let i = 0; i < layerName.length; i++) {
+	        let li = $('<li></li>');
+	        let checkbox = $('<input value=' + i + ' class="lm" type="checkbox" checked ><span>');
+	
+	        let span = $('<span>' + layerName[i] + '</span>')
+	        li.append(checkbox);
+	        li.append(span);
+	        let del = $('<a value=' + i + ' class="del">X</a>')
+	        li.append(del)
+	        layerManger.append(li);
+	    }
+	    //计算图层的数量
+	    $('#num').text('图层数量为：' + layerName.length);
+		//$('#pos').text('经纬度为：' + layerName.length);
+		
+	}
+	init();
+	var layers = [];
+	//创建图层,并加载
+	for (let i = 0; i < layerUrl.length; i++) {
+	    // alert(layerUrl[i]);
+	    let layer = new FeatureLayer({
+	        url: layerUrl[i]
+	    })
+	    layers.push(layer);
+	    map.add(layer)
+	}
+	$('.lm').change(function () {
+	    if (this.checked === true) {
+	        map.add(layers[this.value])
+	        //alert(this.value)
+	    } else {
+	        map.remove(layers[this.value])
+	    }
+	})
+	//移除图层
+	$('.del').click(function () {
+	    // alert(this.value)
+	    let index = this.getAttribute("value")
+	
+	    map.remove(layers[index]);
+	    //将其从列表中删除
+	    layerName.splice(index, 1);
+	    layerUrl.splice(index, 1);
+	    layers.splice(index, 1);
+	    //重新生成复选框
+	    lmMethods();
+	    // console.log(layerName)
+	    //重新绑定事件
+	    $('.lm').change(function () {
+	        if (this.checked === true) {
+	            map.add(layers[this.value])
+	            //alert(this.value)
+	        } else {
+	            map.remove(layers[this.value])
+	        }
+	    })
+	    //绑定删除事件
+	    del();
+	})
+	
+	            });
+				
+				
+				
+				
+	    </script>
+</body>
+
+</html>
